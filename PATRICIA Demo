@@ -1,0 +1,150 @@
+import datetime
+#Planning
+#Demonstrations: Free-range eggs (true) (also vertically integrated), leather handbags (untraceable), diamond ring (suspected blood diamond)
+#Eggs (item ID 1564734, batch ID 2475892): Penny's Free Range Farm, Corlandia Branch (Corlandia Animal Welfare Society certified, primary producer certified) -->
+#Penny's Egg Packing Plant --> SojaMart, Corlandia, 1st Avenue Branch
+#Slata Leather Handbags (item ID 28738, batch ID 00285): Orgenli 
+
+#Worldbuilding notes to self
+#IDs consist of 6 organization digits, followed by 6 individual digits
+#109002: Penny's
+#500039: SojaMart
+#IDs beginning with 9 are reserved for people who create their own IDs
+
+#Before the digital signature: 
+#ADD DIGITAL SIGNATURE LATER!
+registeredIDList = [109002000003, 109002000137, 500039321375]
+passcodes = ["c@sarec00l", "123456789", "sojamart2023"]
+registeredNames = ["Penny's Free Range Farm, Corlandia Branch", "Penny's Egg Packing Plant", "SojaMart, Corlandia, 1st Avenue Branch"]
+verifications = [["Corlandia Animal Welfare Society Certified", "Penny's Official Facility"],["50% Solar Initiative Certified","Penny's Official Facility"],["SojaMart Official Facility"]]
+pendingVerifications = [[],[],[]]
+blockchain = [[109002000003, 15647342475892, 20231225],[109002000137, 15647342475892, 20231225],[500039321375, 15647342475892, 20231226]]
+
+#Note: All of the locations and facilities mentioned in this demonstration are (quite obviously) fictional.
+#Some of the names are very boring and poorly chosen, but they get the job done.
+print("Welcome to the PATRICIA blockchain!")
+print("")
+
+print("If you are a consumer, please enter '1'.")
+print("If you are a supplier, please enter '2'.")
+trapLoop = True
+while trapLoop:
+    consSup = input("")
+    if consSup == "1" or consSup == "2":
+        trapLoop = False
+    else:
+        print("Invalid response, try again!")
+
+if consSup == "1":
+    print("Enter a product ID to find information associated with it.")
+    stay = True
+    while stay:
+        trapLoop = True
+        while trapLoop:
+            prodID = input("")
+            try:
+                prodID = int(prodID)
+                trapLoop = False
+            except ValueError:
+                print("Product IDs are represented as 14-digit denary integers. Please try again.")
+
+        print("")
+        for i in range(len(blockchain)):
+            if blockchain[i][1] == prodID:
+                print("On "+str(blockchain[i][2]//10000)+"-"+str(int((blockchain[i][2]%10000-blockchain[i][2]%100)/100))+"-"+str(blockchain[i][2]%100)+", ", end = "")
+                print("this product was processed in ", end = "")
+                IDlocation = -1
+                for j in range(len(registeredIDList)):
+                    if registeredIDList[j] == blockchain[i][0]:
+                        IDlocation = j
+                if IDlocation == -1:
+                    print("an unregistered location.")
+                else:
+                    print(registeredNames[IDlocation]+". ")
+                    if verifications[IDlocation] != []:
+                        print("This facility had the following verifications:")
+                        for k in verifications[IDlocation]:
+                            print(k)
+                print("")
+
+        print("If you would like to examine other products as well, please enter '1'.")
+        p = input("")
+        if p == "1":
+            print("")
+            print("Input product ID:")
+        else:
+            stay = False
+        
+            
+if consSup == "2":
+    print("Input node ID:") #Note: This would happen automatically in the actual system.
+    trapLoop = True
+    while trapLoop:
+        nodeID = input("")
+        try:
+            nodeID = int(nodeID)
+            if nodeID < 10**12:
+                trapLoop = False
+            else:
+                print("The node ID should be no more than 12 digits long.")
+        except ValueError:
+            print("Node IDs are represented as 12-digit denary integers. Please try again.")
+    loggedInTo = -1
+    createNew = False
+    for i in range(len(registeredIDList)):
+        if registeredIDList[i] == nodeID:
+            loggedInTo = i
+    if loggedInTo == -1:
+        createNew = True
+        print("The ID you entered has not been registered as a supplier facility.")
+        print("You can register with a few simple steps.")
+        print("Enter the name of your facility:")
+        pendingName = input("")
+        print("Enter the password that you would like to set.")
+        pendingPassword = input("")
+        passcodes.append(pendingPassword)
+        registeredNames.append(pendingName)
+        
+    else:
+        print("The ID you have entered has been registered as '"+registeredNames[loggedInTo]+"'.")
+        print("Please enter the password for "+registeredNames[loggedInTo]+".")
+        trapLoop = True
+        while trapLoop:
+            password = input("")
+            if password == passcodes[loggedInTo]:
+                print("Access granted.")
+                print("Currently logged into '"+registeredNames[loggedInTo]+"'.")
+                trapLoop = False
+            else:
+                print("Incorrect password, try again.")
+    stay = True
+    while stay:
+        print("Input '1' to add product data or '2' to register for verification from other organizations.")
+        trapLoop = True
+        while trapLoop:
+            choice = input('')
+            if choice == '1' or choice == '2':
+                trapLoop = False
+            else:
+                print("Please input either '1' or '2'.")
+                
+        if choice == '1':
+            print("Please input the 14-digit item batch ID.")
+            trapLoop = True
+            while trapLoop:
+                prodID = input("")
+                try:
+                    prodID = int(prodID)
+                    if prodID < 10**14:
+                        trapLoop = False
+                    else:
+                        print("The batch ID should only have 14 digits.")
+                except ValueError:
+                    print("The batch ID should be a denary integer.")
+            dateint = datetime.date.today().year*10000 + datetime.date.today().month*100 + datetime.date.today().day
+            blockchain.append([nodeID, prodID, dateint])
+
+        if choice == '2':
+            print("Please input the name of the organization you would like to register with.")
+            pendingVerifications[loggedInTo].append(input(''))
+            print("Your registration has been sent. The organization will reach out to you in a few days with further details.")
