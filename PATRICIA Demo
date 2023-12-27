@@ -1,27 +1,54 @@
 import datetime
+import hashlib
+import sys
+import numpy
 #Planning
-#Demonstrations: Free-range eggs (true) (also vertically integrated), leather handbags (untraceable), diamond ring (suspected blood diamond)
+#Demonstrations: Free-range eggs (true) (also vertically integrated), leather handbags (untraceable), diamond ring (environmental impact)
 #Eggs (item ID 1564734, batch ID 2475892): Penny's Free Range Farm, Corlandia Branch (Corlandia Animal Welfare Society certified, primary producer certified) -->
 #Penny's Egg Packing Plant --> SojaMart, Corlandia, 1st Avenue Branch
-#Slata Leather Handbags (item ID 28738, batch ID 00285): Orgenli 
+#Slata handbags(80352671937582)
+#Goldmann necklaces (12596847920418)
 
 #Worldbuilding notes to self
 #IDs consist of 6 organization digits, followed by 6 individual digits
 #109002: Penny's
 #500039: SojaMart
+#384751: Triangle K Vendors
+#275869: POLUT Corporation
+#738495: Goldmann Jewellers
 #IDs beginning with 9 are reserved for people who create their own IDs
 
 #Before the digital signature: 
 #ADD DIGITAL SIGNATURE LATER!
-registeredIDList = [109002000003, 109002000137, 500039321375]
-passcodes = ["c@sarec00l", "123456789", "sojamart2023"]
-registeredNames = ["Penny's Free Range Farm, Corlandia Branch", "Penny's Egg Packing Plant", "SojaMart, Corlandia, 1st Avenue Branch"]
-verifications = [["Corlandia Animal Welfare Society Certified", "Penny's Official Facility"],["50% Solar Initiative Certified","Penny's Official Facility"],["SojaMart Official Facility"]]
-pendingVerifications = [[],[],[]]
-blockchain = [[109002000003, 15647342475892, 20231225],[109002000137, 15647342475892, 20231225],[500039321375, 15647342475892, 20231226]]
+
+def sha256_hash(message):
+    sha256 = hashlib.sha256()
+    message_bytes = message.encode('utf-8')
+    sha256.update(message_bytes)
+    hash_result = sha256.hexdigest()
+    return hash_result
+
+def sha256list_hash(array):
+    barray = []
+    for p in range(len(array)):
+        temp = str(array[p])
+        temp = sha256_hash(temp)
+        barray.append(temp)
+    return array
+
+registeredIDList = [109002000003, 109002000137, 500039321375, 912348573682, 384751345678, 275869852852, 275869392758, 738495027583, 738495184739, 738495968203]
+passcodes = ["c@sarec00l", "123456789", "sojamart2023", "ILoveScammingPeople", "p09201977", "275869", "275869", "hRB@*HD&u982@", "ujdnNWu8J@4)", "bcUE@89bk342"]
+registeredNames = ["Penny's Free Range Farm, Corlandia Branch", "Penny's Egg Packing Plant", "SojaMart, Corlandia, 1st Avenue Branch", "Edgeoftown Warehouse", "Triangle K Vendors, 5th Street Metro Branch", "Ferngill Diamond Mine", "POLUT Refinement Facility, Ferngill Branch", "Goldmann Ferngill Diamond Warehouse", "Goldmann International Workshop", "Goldmann Jewelry, Corlandia Branch, 5th Avenue"]
+verifications = [["Corlandia Animal Welfare Society Certified", "Penny's Official Facility"],["50% Solar Initiative Certified","Penny's Official Facility"],["SojaMart Official Facility"], [], ["Triangle K Verified"], ["POLUT Corporation Official Facility", "International Diamond Authority Verified"], ["POLUT Corporation Official Facility"], ["Goldmann Official Facility", "Ferngill Government Verified"], ["Goldmann Official Facility"], ["Goldmann Official Facility"]]
+warnings = [[],[],[],["Alleged counterfeit supplier"],[],[],["Fined for violating environmental laws", "Employee welfare complaints"],[],[],[]]
+pendingVerifications = [[],[],[],[],[],[],[],[],[],[]]
+blockchain = [[275869852852,12596847920418,20190328],[275869392758,12596847920418,20190401],[738495027583,12596847920418,20190419],[912348573682,80352671937582,20231205],[738495184739,12596847920418,20231207],[109002000003, 15647342475892, 20231225],[384751345678,80352671937582,20231225],[109002000137, 15647342475892, 20231225],[500039321375, 15647342475892, 20231226],[738495968203,12596847920418,20231227]]
+hashBlockChainRecord = sha256list_hash(blockchain)
+
 
 #Note: All of the locations and facilities mentioned in this demonstration are (quite obviously) fictional.
 #Some of the names are very boring and poorly chosen, but they get the job done.
+
 print("Welcome to the PATRICIA blockchain!")
 print("")
 
@@ -47,10 +74,22 @@ if consSup == "1":
                 trapLoop = False
             except ValueError:
                 print("Product IDs are represented as 14-digit denary integers. Please try again.")
-
+        
         print("")
+        #In this program, this segment will always see the blockchain as authentic because there is no way to modify the array after the program starts.
+        #Just a little proof-of-concept :)
+        print("Verifying blockchain authenticity...")
+        if sha256list_hash(blockchain) == hashBlockChainRecord:
+            print("Blockchain authenticated!")
+        else:
+            print("Tampering detected! Terminating...")
+            sys.exit()
+                
+        print("")
+        found = False
         for i in range(len(blockchain)):
             if blockchain[i][1] == prodID:
+                found = True
                 print("On "+str(blockchain[i][2]//10000)+"-"+str(int((blockchain[i][2]%10000-blockchain[i][2]%100)/100))+"-"+str(blockchain[i][2]%100)+", ", end = "")
                 print("this product was processed in ", end = "")
                 IDlocation = -1
@@ -58,15 +97,26 @@ if consSup == "1":
                     if registeredIDList[j] == blockchain[i][0]:
                         IDlocation = j
                 if IDlocation == -1:
-                    print("an unregistered location.")
+                    print("an unregistered location. There is a high probabability that the good is a counterfeit.")
                 else:
                     print(registeredNames[IDlocation]+". ")
                     if verifications[IDlocation] != []:
                         print("This facility had the following verifications:")
                         for k in verifications[IDlocation]:
                             print(k)
+                    if warnings[IDlocation] != []:
+                        print("Be aware that the facility has been issued the following warnings:")
+                        for k in warnings[IDlocation]:
+                            print(k)
+                
+                if registeredIDList[IDlocation]//10**11 == 9:
+                    print("Be aware that this is a personal node. It is not run by any organizations. There is some chance that the good may be a counterfeit.")
+                
                 print("")
-
+                
+        if not found:
+            print("Product not found.")
+        
         print("If you would like to examine other products as well, please enter '1'.")
         p = input("")
         if p == "1":
@@ -129,6 +179,14 @@ if consSup == "2":
                 print("Please input either '1' or '2'.")
                 
         if choice == '1':
+            print("Verifying blockchain authenticity...")
+            if sha256list_hash(blockchain) == hashBlockChainRecord:
+                print("Blockchain authenticated!")
+            else:
+                print("Tampering detected! Terminating...")
+                sys.exit()
+
+            
             print("Please input the 14-digit item batch ID.")
             trapLoop = True
             while trapLoop:
@@ -143,7 +201,18 @@ if consSup == "2":
                     print("The batch ID should be a denary integer.")
             dateint = datetime.date.today().year*10000 + datetime.date.today().month*100 + datetime.date.today().day
             blockchain.append([nodeID, prodID, dateint])
+            hashBlockChainRecord = sha256list_hash(blockchain)
 
+        if choice == '2':
+            print("Please input the name of the organization you would like to register with.")
+            pendingVerifications[loggedInTo].append(input(''))
+            print("Your registration has been sent. The organization will reach out to you in a few days with further details.")
+        
+        print("Please enter '1' if you would like to perform more actions.")
+        choice = input("")
+        if choice != 1:
+            print("Exiting program.")
+            stay = False
         if choice == '2':
             print("Please input the name of the organization you would like to register with.")
             pendingVerifications[loggedInTo].append(input(''))
